@@ -23,7 +23,7 @@ public class PlayerController : MonoBehaviour
 
 //    how long Stun state is
     public float stunDuration;
-    public float stunStartTime;
+    private float stunStartTime;
 
 //   is grounded?
     private bool grounded;
@@ -37,7 +37,7 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate ()
     {
 //        Checking if grounded
-        grounded = isGrounded();
+        grounded = IsGrounded();
         
 //        Listening for inptus
         CheckInputs();
@@ -89,7 +89,7 @@ public class PlayerController : MonoBehaviour
                 curState = PlayerState.Idle;
             }
             
-            if(rig.velcity.x != 0 && grounded)
+            if(rig.velocity.x != 0 && grounded)
             {
                 curState = PlayerState.Walking;
             }
@@ -104,6 +104,7 @@ public class PlayerController : MonoBehaviour
 //        In C#, can convert enum to int through this.
 //        In Java, can get value from Enum.ordinal();
         anim.SetInteger("State", (int)curState);
+
     }
 
 //    move horizontally
@@ -115,11 +116,11 @@ public class PlayerController : MonoBehaviour
 //        Want to flip the character when moving to the left
         if(dir > 0)
         {
-            transform.localScale = newVector3(1, 1, 1);
+            transform.localScale = new Vector3(1, 1, 1);
         }
         else if(dir < 0)
         {
-            transform.localScale = newVector3(-1, 1, 1);
+            transform.localScale = new Vector3(-1, 1, 1);
         }
         
 //        set the rigidbody velocity
@@ -146,19 +147,45 @@ public class PlayerController : MonoBehaviour
 //    stuns the player
     public void Stun ()
     {
+        curState = PlayerState.Stunned;
 
+        // move downwards
+        rig.velocity = Vector2.down * 3;
+        stunStartTime = Time.time;
+
+        // Stop the jetpack forcibly
+        jetpackParticle.Stop();
     }
 
 //    returns if the character is grounded or not
-    bool IsGrounded ()
+    public bool IsGrounded ()
     {
-        return true;
+        // raycast underneath player
+        // raycast holds data for the object that you hit
+        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y - .5f), Vector2.down, 0.3f);
+        
+        // hit the floor, do nothing
+        if(hit.collider != null && hit.collider.CompareTag("Floor"))
+        {
+            // Debug.Log("Is grounded");
+            // do nothing
+            return true;
+        }
+        // otherwise return false
+        // Debug.Log("Not grounded");
+        return false;
     }
 
 //    sends the 2D collider of the object that is collided with
 //    if it's an obstacle, it will trigger a stun
     private void OnTriggerEnter2D (Collider2D collision)
     {
-
+            if(curState != PlayerState.Stunned)
+            {
+                if(collision.gameObject.CompareTag("Obstacle"))
+                {
+                    Stun();
+                }
+            }
     }
 }
