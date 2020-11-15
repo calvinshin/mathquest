@@ -162,7 +162,8 @@ public class PlayerController : MonoBehaviour
     {
         // raycast underneath player
         // raycast holds data for the object that you hit
-        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y - .5f), Vector2.down, 0.3f);
+        // If this value is too low, then the player always  seems to be flying.
+        RaycastHit2D hit = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y - .55f), Vector2.down, 0.3f);
         
         // hit the floor, do nothing
         if(hit.collider != null && hit.collider.CompareTag("Floor"))
@@ -178,6 +179,7 @@ public class PlayerController : MonoBehaviour
 
 //    sends the 2D collider of the object that is collided with
 //    if it's an obstacle, it will trigger a stun
+    // This is an onTrigger, which means that the collider (circle collider 2D) needs to have "Is Trigger" checked from the obstacle side
     private void OnTriggerEnter2D (Collider2D collision)
     {
             if(curState != PlayerState.Stunned)
